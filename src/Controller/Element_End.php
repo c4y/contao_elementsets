@@ -1,6 +1,9 @@
 <?php
-namespace leycommediasolutions\contao_elementsets\Resources\contao\classes;
-class Element_End extends \ContentElement
+namespace leycommediasolutions\contao_elementsets\Controller;
+
+use Contao\ContentElement;
+
+class Element_End extends ContentElement
 {
     /**
 	 * Template

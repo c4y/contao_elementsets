@@ -1,5 +1,6 @@
 <?php
-namespace Contao;
+
+namespace leycommediasolutions\contao_elementsets\DataTable;
 
 use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\CoreBundle\Exception\InternalServerErrorException;
@@ -8,14 +9,14 @@ use Contao\CoreBundle\Picker\PickerInterface;
 use Patchwork\Utf8;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use leycommediasolutions\contao_elementsets\Resources\contao\classes;
+use Contao\DC_Table;
 
 /**
  * Class DC_ElementSets
  * 
  */
 
-class DC_ElementSets extends \DC_Table
+class DC_ElementSets extends DC_Table
 {
     public function __construct($strTable, $arrModule=array())
     {

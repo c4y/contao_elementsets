@@ -1,6 +1,9 @@
 <?php
-namespace leycommediasolutions\contao_elementsets\Resources\contao\classes;
-class Element_Start extends \ContentElement
+namespace leycommediasolutions\contao_elementsets\Controller;
+
+use Contao\ContentElement;
+
+class Element_Start extends ContentElement
 {
     protected $strTemplate = "ce_elementset_start"; 
 
