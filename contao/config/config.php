@@ -7,8 +7,8 @@ array_insert($GLOBALS['BE_MOD']['content'], 8, array
 	)
 ));
 
-$GLOBALS['TL_CTE']['elementset']['elementset_start'] = 'leycommediasolutions\contao_elementsets\contao\classes\Element_Start';
-$GLOBALS['TL_CTE']['elementset']['elementset_end'] = 'leycommediasolutions\contao_elementsets\contao\classes\Element_End';
+$GLOBALS['TL_CTE']['elementset']['elementset_start'] = 'leycommediasolutions\contao_elementsets\Controller\Element_Start';
+$GLOBALS['TL_CTE']['elementset']['elementset_end'] = 'leycommediasolutions\contao_elementsets\Controller\Element_End';
 
 
 $GLOBALS['TL_PERMISSIONS'][] = 'elementsets_s';

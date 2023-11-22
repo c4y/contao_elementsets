@@ -1,6 +1,6 @@
 <?php
 
-namespace leycommediasolutions\contao_elementsets\DataTable;
+namespace leycommediasolutions\contao_elementsets\Driver;
 
 use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\CoreBundle\Exception\InternalServerErrorException;
@@ -10,6 +10,8 @@ use Patchwork\Utf8;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Contao\DC_Table;
+use Contao\BackendUser;
+use Contao\Image;
 
 /**
  * Class DC_ElementSets
@@ -27,7 +29,7 @@ class DC_ElementSets extends DC_Table
      */   
 	public function elementset_add($set=array())
 	{
-        if ($GLOBALS['TL_DCA'][$this->strTable]['config']['notCreatable'])
+        if (array_key_exists('notCreatable', $GLOBALS['TL_DCA'][$this->strTable]['config']) && $GLOBALS['TL_DCA'][$this->strTable]['config']['notCreatable']) 
 		{
 			throw new InternalServerErrorException('Table "' . $this->strTable . '" is not creatable.');
         }
@@ -51,7 +53,8 @@ class DC_ElementSets extends DC_Table
 		$objSession->set('CLIPBOARD', $arrClipboard);
 
 		// Insert the record if the table is not closed and switch to edit mode
-	    if (!$GLOBALS['TL_DCA'][$this->strTable]['config']['closed'])
+	    if (!array_key_exists('closed', $GLOBALS['TL_DCA'][$this->strTable]['config']) || 
+          (array_key_exists('closed', $GLOBALS['TL_DCA'][$this->strTable]['config']) && !$GLOBALS['TL_DCA'][$this->strTable]['config']['closed']))
 		{
 			$this->set['tstamp'] = 0;
 
@@ -152,19 +155,19 @@ class DC_ElementSets extends DC_Table
                     if (array_key_exists($k, $GLOBALS['TL_DCA'][$this->strTable]['fields']))
                     {
                         // Never copy passwords
-                        if ($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['inputType'] == 'password')
+                        if (array_key_exists('inputType', $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]) && $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['inputType'] == 'password')
                         {
                             $v = \Widget::getEmptyValueByFieldType($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['sql']);
                         }
     
                         // Empty unique fields or add a unique identifier in copyAll mode
-                        elseif ($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['unique'])
+                        elseif (array_key_exists('eval', $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]) && array_key_exists('unique', $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']) && $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['unique'])
                         {
                             $v = (\Input::get('act') == 'copyAll' && !$GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['doNotCopy']) ? $v .'-'. substr(md5(uniqid(mt_rand(), true)), 0, 8) : \Widget::getEmptyValueByFieldType($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['sql']);
                         }
     
                         // Reset doNotCopy and fallback fields to their default value
-                        elseif ($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['doNotCopy'] || $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['fallback'])
+                        elseif (array_key_exists('eval', $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]) && $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['doNotCopy'] || array_key_exists('eval', $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]) && $GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['eval']['fallback'])
                         {
                             $v = \Widget::getEmptyValueByFieldType($GLOBALS['TL_DCA'][$this->strTable]['fields'][$k]['sql']);
     
@@ -260,7 +263,7 @@ class DC_ElementSets extends DC_Table
      */
     public function showTheElements($intId, $ajaxId, $blnDoNotRedirect)
     {
-        if ($GLOBALS['TL_DCA'][$this->strTable]['config']['notEditable'])
+        if (array_key_exists('notEditable', $GLOBALS['TL_DCA'][$this->strTable]['config']) && $GLOBALS['TL_DCA'][$this->strTable]['config']['notEditable'])
 		{
 			throw new InternalServerErrorException('Table "' . $this->strTable . '" is not editable.');
 		}
@@ -292,7 +295,7 @@ class DC_ElementSets extends DC_Table
          */
 
         //Filter wird wieder geloescht
-        if($_POST['filter_reset'] == 1)
+        if(array_key_exists('filter_reset', $_POST) &&  $_POST['filter_reset'] == 1)
         {
             $_POST['category'] = '';
         }
@@ -304,7 +307,8 @@ class DC_ElementSets extends DC_Table
         {
             $id_category[] = $result_category->id;
             $category_name[] = $result_category->category;
-            $cat .= $result_category->category . ","; // Um die Form_Fields zu fuellen
+            // @todo: Checken, warum $cat nicht genutzt wird
+            //$cat .= $result_category->category . ","; // Um die Form_Fields zu fuellen
         }
 
         // Die Daten werden aus der Datenbank genommen
@@ -328,7 +332,7 @@ class DC_ElementSets extends DC_Table
             $picture[] = Image::getHtml(\System::getContainer()->get('contao.image.image_factory')->create(TL_ROOT . '/' . $objFile_picture->path)->getUrl(TL_ROOT), $result->title, 'class="elementsets_preview"');
             $category[] = $result->category;
         }
-        if($_POST['category'] != '')
+        if(array_key_exists('category', $_POST) && $_POST['category'] != '')
         {
             $return_first = "";
             $return_second = "";
@@ -465,6 +469,7 @@ class DC_ElementSets extends DC_Table
         $result_options = $this->Database->prepare("SELECT category FROM tl_elementsets_category")
                                 ->execute();
 
+        $options_elementsets = '';
         while($result_options->next())
         {
             foreach ($result_options->row() as $k=>$v)
@@ -483,6 +488,7 @@ class DC_ElementSets extends DC_Table
         </div>';
         
         //FILTER HTML
+        $return1 = '';
         $return1 .= '
             <div class="tl_panel cf">
             ' . $submit . ' 
